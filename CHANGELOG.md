@@ -5,17 +5,20 @@
 ### Changes
 
 * [BUGFIX]
-* [CHANGE]
+* [BUGFIX] Add fallback for missing /proc/1/mounts #1172
+* [CHANGE] Add TCPSynRetrans to netstat default filter #1143
+* [CHANGE] Add a limit to the number of in-flight requests #1166
 * [ENHANCEMENT] Add Infiniband counters #1120
-* [FEATURE]
+* [FEATURE] Add a flag to disable exporter metrics #1148
+* [FEATURE] Add kstat-based Solaris metrics for boottime, cpu and zfs collectors #1197
 
-## 0.17.0-rc.0 / 2018-10-19
+## 0.17.0 / 2018-11-30
 
 Build note: Linux builds can now be built without CGO.
 
 ### **Breaking changes**
 
-supvervisord collector reports "start_time_seconds" rather than "uptime" #952
+supvervisord collector reports `start_time_seconds` rather than `uptime` #952
 
 The wifi collector is disabled by default due to suspected caching issues and goroutine leaks.
 * https://github.com/prometheus/node_exporter/issues/870
@@ -40,9 +43,11 @@ Darwin meminfo metrics have been renamed to match Prometheus conventions. #1060
 * [FEATURE] Allow removal of rootfs prefix for run in docker #1058
 * [ENHANCEMENT] Support for octal characters in mountpoints #954
 * [ENHANCEMENT] Update wifi stats to support multiple stations #980
+* [ENHANCEMENT] Add transmit/receive bytes total for wifi stations #1150
 * [ENHANCEMENT] Handle stuck NFS mounts #997
 * [ENHANCEMENT] infiniband: Handle iWARP RDMA modules N/A #974
 * [ENHANCEMENT] Update diskstats for linux kernel 4.19 #1109
+* [ENHANCEMENT] Collect TasksCurrent, TasksMax per systemd unit #1098
 
 * [BUGFIX] Fix FreeBSD CPU temp #965
 * [BUGFIX] Fix goroutine leak in supervisord collector #978
@@ -54,6 +59,11 @@ Darwin meminfo metrics have been renamed to match Prometheus conventions. #1060
 * [BUGFIX] Filter systemd units in Go for compatibility with older versions #1083
 * [BUGFIX] Update cpu collector for OpenBSD 6.4 #1094
 * [BUGFIX] Fix typo on HELP of `read_time_seconds_total` #1057
+* [BUGFIX] collector/diskstats: don't fail if there are extra stats #1125
+* [BUGFIX] collector/hwmon\_linux: handle temperature sensor file #1123
+* [BUGFIX] collector/filesystem: add bounds check #1133
+* [BUGFIX] Fix dragonfly's CPU counting frequency #1140
+* [BUGFIX] Add fallback for missing /proc/1/mounts #1172
 
 ## 0.16.0 / 2018-05-15
 

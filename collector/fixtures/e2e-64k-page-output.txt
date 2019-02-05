@@ -293,7 +293,7 @@ node_cpu_seconds_total{cpu="7",mode="user"} 290.98
 # HELP node_disk_discard_time_seconds_total This is the total number of seconds spent by all discards.
 # TYPE node_disk_discard_time_seconds_total counter
 node_disk_discard_time_seconds_total{device="sdb"} 11.13
-# HELP node_disk_discarded_sectors_total The total number of sectors discard successfully.
+# HELP node_disk_discarded_sectors_total The total number of sectors discarded successfully.
 # TYPE node_disk_discarded_sectors_total counter
 node_disk_discarded_sectors_total{device="sdb"} 1.925173784e+09
 # HELP node_disk_discards_completed_total The total number of discards completed successfully.
@@ -1760,6 +1760,12 @@ node_netstat_Tcp_CurrEstab 0
 # HELP node_netstat_Tcp_InErrs Statistic TcpInErrs.
 # TYPE node_netstat_Tcp_InErrs untyped
 node_netstat_Tcp_InErrs 5
+# HELP node_netstat_Tcp_InSegs Statistic TcpInSegs.
+# TYPE node_netstat_Tcp_InSegs untyped
+node_netstat_Tcp_InSegs 5.7252008e+07
+# HELP node_netstat_Tcp_OutSegs Statistic TcpOutSegs.
+# TYPE node_netstat_Tcp_OutSegs untyped
+node_netstat_Tcp_OutSegs 5.4915039e+07
 # HELP node_netstat_Tcp_PassiveOpens Statistic TcpPassiveOpens.
 # TYPE node_netstat_Tcp_PassiveOpens untyped
 node_netstat_Tcp_PassiveOpens 230
@@ -2451,6 +2457,10 @@ node_wifi_station_info{bssid="00:11:22:33:44:55",device="wlan0",mode="client",ss
 # TYPE node_wifi_station_receive_bits_per_second gauge
 node_wifi_station_receive_bits_per_second{device="wlan0",mac_address="01:02:03:04:05:06"} 2.56e+08
 node_wifi_station_receive_bits_per_second{device="wlan0",mac_address="aa:bb:cc:dd:ee:ff"} 1.28e+08
+# HELP node_wifi_station_receive_bytes_total The total number of bytes received by a WiFi station.
+# TYPE node_wifi_station_receive_bytes_total counter
+node_wifi_station_receive_bytes_total{device="wlan0",mac_address="01:02:03:04:05:06"} 0
+node_wifi_station_receive_bytes_total{device="wlan0",mac_address="aa:bb:cc:dd:ee:ff"} 0
 # HELP node_wifi_station_signal_dbm The current WiFi signal strength, in decibel-milliwatts (dBm).
 # TYPE node_wifi_station_signal_dbm gauge
 node_wifi_station_signal_dbm{device="wlan0",mac_address="01:02:03:04:05:06"} -26
@@ -2459,6 +2469,10 @@ node_wifi_station_signal_dbm{device="wlan0",mac_address="aa:bb:cc:dd:ee:ff"} -52
 # TYPE node_wifi_station_transmit_bits_per_second gauge
 node_wifi_station_transmit_bits_per_second{device="wlan0",mac_address="01:02:03:04:05:06"} 3.28e+08
 node_wifi_station_transmit_bits_per_second{device="wlan0",mac_address="aa:bb:cc:dd:ee:ff"} 1.64e+08
+# HELP node_wifi_station_transmit_bytes_total The total number of bytes transmitted by a WiFi station.
+# TYPE node_wifi_station_transmit_bytes_total counter
+node_wifi_station_transmit_bytes_total{device="wlan0",mac_address="01:02:03:04:05:06"} 0
+node_wifi_station_transmit_bytes_total{device="wlan0",mac_address="aa:bb:cc:dd:ee:ff"} 0
 # HELP node_wifi_station_transmit_failed_total The total number of times a station has failed to send a packet.
 # TYPE node_wifi_station_transmit_failed_total counter
 node_wifi_station_transmit_failed_total{device="wlan0",mac_address="01:02:03:04:05:06"} 4

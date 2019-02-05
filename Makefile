@@ -13,11 +13,9 @@
 
 include Makefile.common
 
-GO     ?= GO15VENDOREXPERIMENT=1 go
-GOARCH := $(shell $(GO) env GOARCH)
-GOHOSTARCH := $(shell $(GO) env GOHOSTARCH)
-
-PROMTOOL    ?= $(FIRST_GOPATH)/bin/promtool
+PROMTOOL_VERSION ?= 2.5.0
+PROMTOOL_URL     ?= https://github.com/prometheus/prometheus/releases/download/v$(PROMTOOL_VERSION)/prometheus-$(PROMTOOL_VERSION).$(GO_BUILD_PLATFORM).tar.gz
+PROMTOOL         ?= $(FIRST_GOPATH)/bin/promtool
 
 DOCKER_IMAGE_NAME       ?= node-exporter
 MACH                    ?= $(shell uname -m)
@@ -25,20 +23,7 @@ DOCKERFILE              ?= Dockerfile
 
 STATICCHECK_IGNORE =
 
-ifeq ($(OS),Windows_NT)
-	OS_detected := Windows
-else
-	OS_detected := $(shell uname -s)
-endif
-
-ifeq ($(GOHOSTARCH),amd64)
-	ifeq ($(OS_detected),$(filter $(OS_detected),Linux FreeBSD Darwin Windows))
-		# Only supported on amd64
-		test-flags := -race
-	endif
-endif
-
-ifeq ($(OS_detected), Linux)
+ifeq ($(GOHOSTOS), linux)
 	test-e2e := test-e2e
 else
 	test-e2e := skip-test-e2e
@@ -49,7 +34,7 @@ ifeq ($(GOOS), linux)
 	PROMU_CONF ?= .promu.yml
 else
 	ifndef GOOS
-		ifeq ($(OS_detected), Linux)
+		ifeq ($(GOHOSTOS), Linux)
 			PROMU_CONF ?= .promu.yml
 		else
 			PROMU_CONF ?= .promu-cgo.yml
@@ -72,8 +57,8 @@ endif
 # 64bit -> 32bit mapping for cross-checking. At least for amd64/386, the 64bit CPU can execute 32bit code but not the other way around, so we don't support cross-testing upwards.
 cross-test = skip-test-32bit
 define goarch_pair
-	ifeq ($$(OS_detected),Linux)
-		ifeq ($$(GOARCH),$1)
+	ifeq ($$(GOHOSTOS),linux)
+		ifeq ($$(GOHOSTARCH),$1)
 			GOARCH_CROSS = $2
 			cross-test = test-32bit
 		endif
@@ -85,7 +70,7 @@ $(eval $(call goarch_pair,amd64,386))
 $(eval $(call goarch_pair,mips64,mips))
 $(eval $(call goarch_pair,mips64el,mipsel))
 
-all: style vet staticcheck checkmetrics build test $(cross-test) $(test-e2e)
+all: style vet staticcheck checkmetrics checkrules build test $(cross-test) $(test-e2e)
 
 .PHONY: test
 test: collector/fixtures/sys/.unpacked
@@ -99,7 +84,7 @@ test-32bit: collector/fixtures/sys/.unpacked
 
 .PHONY: skip-test-32bit
 skip-test-32bit:
-	@echo ">> SKIP running tests in 32-bit mode: not supported on $(OS_detected)/$(GOARCH)"
+	@echo ">> SKIP running tests in 32-bit mode: not supported on $(GOHOSTOS)/$(GOHOSTARCH)"
 
 collector/fixtures/sys/.unpacked: collector/fixtures/sys.ttar
 	@echo ">> extracting sysfs fixtures"
@@ -114,12 +99,17 @@ test-e2e: build collector/fixtures/sys/.unpacked
 
 .PHONY: skip-test-e2e
 skip-test-e2e:
-	@echo ">> SKIP running end-to-end tests on $(OS_detected)"
+	@echo ">> SKIP running end-to-end tests on $(GOHOSTOS)"
 
 .PHONY: checkmetrics
 checkmetrics: $(PROMTOOL)
 	@echo ">> checking metrics for correctness"
 	./checkmetrics.sh $(PROMTOOL) $(e2e-out)
+
+.PHONY: checkrules
+checkrules: $(PROMTOOL)
+	@echo ">> checking rules for correctness"
+	find . -name "*rules*.yml" | xargs -I {} $(PROMTOOL) check rules {}
 
 .PHONY: docker
 docker:
@@ -134,6 +124,13 @@ test-docker:
 	@echo ">> testing docker image"
 	./test_image.sh "$(DOCKER_REPO)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)" 9100
 
-.PHONY: promtool $(FIRST_GOPATH)/bin/promtool
-$(FIRST_GOPATH)/bin/promtool promtool:
-	@GOOS= GOARCH= $(GO) get -u github.com/prometheus/prometheus/cmd/promtool
+.PHONY: promtool
+promtool: $(PROMTOOL)
+
+$(PROMTOOL):
+	$(eval PROMTOOL_TMP := $(shell mktemp -d))
+	curl -s -L $(PROMTOOL_URL) | tar -xvzf - -C $(PROMTOOL_TMP)
+	mkdir -p $(FIRST_GOPATH)/bin
+	cp $(PROMTOOL_TMP)/prometheus-$(PROMTOOL_VERSION).$(GO_BUILD_PLATFORM)/promtool $(FIRST_GOPATH)/bin/promtool
+	rm -r $(PROMTOOL_TMP)
+

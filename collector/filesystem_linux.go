@@ -17,6 +17,8 @@ package collector
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"os"
 	"strings"
 	"sync"
@@ -29,7 +31,6 @@ import (
 const (
 	defIgnoredMountPoints = "^/(dev|proc|sys|var/lib/docker/.+)($|/)"
 	defIgnoredFSTypes     = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$"
-	readOnly              = 0x1 // ST_RDONLY
 	mountTimeout          = 30 * time.Second
 )
 
@@ -134,15 +135,29 @@ func stuckMountWatcher(mountPoint string, success chan struct{}) {
 
 func mountPointDetails() ([]filesystemLabels, error) {
 	file, err := os.Open(procFilePath("1/mounts"))
+	if os.IsNotExist(err) {
+		// Fallback to `/proc/mounts` if `/proc/1/mounts` is missing due hidepid.
+		log.Debugf("Got %q reading root mounts, falling back to system mounts", err)
+		file, err = os.Open(procFilePath("mounts"))
+	}
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	filesystems := []filesystemLabels{}
-	scanner := bufio.NewScanner(file)
+	return parseFilesystemLabels(file)
+}
+
+func parseFilesystemLabels(r io.Reader) ([]filesystemLabels, error) {
+	var filesystems []filesystemLabels
+
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		parts := strings.Fields(scanner.Text())
+
+		if len(parts) < 4 {
+			return nil, fmt.Errorf("malformed mount point information: %q", scanner.Text())
+		}
 
 		// Ensure we handle the translation of \040 and \011
 		// as per fstab(5).
@@ -156,5 +171,6 @@ func mountPointDetails() ([]filesystemLabels, error) {
 			options:    parts[3],
 		})
 	}
+
 	return filesystems, scanner.Err()
 }

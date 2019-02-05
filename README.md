@@ -10,6 +10,9 @@ Prometheus exporter for hardware and OS metrics exposed by \*NIX kernels, writte
 in Go with pluggable metric collectors.
 
 The [WMI exporter](https://github.com/martinlindhe/wmi_exporter) is recommended for Windows users.
+To expose NVIDIA GPU metrics, [prometheus-dcgm
+](https://github.com/NVIDIA/gpu-monitoring-tools/tree/master/exporters/prometheus-dcgm)
+can be used.
 
 ## Collectors
 
@@ -26,9 +29,9 @@ Name     | Description | OS
 arp | Exposes ARP statistics from `/proc/net/arp`. | Linux
 bcache | Exposes bcache statistics from `/sys/fs/bcache/`. | Linux
 bonding | Exposes the number of configured and active slaves of Linux bonding interfaces. | Linux
-boottime | Exposes system boot time derived from the `kern.boottime` sysctl. | Darwin, Dragonfly, FreeBSD, NetBSD, OpenBSD
+boottime | Exposes system boot time derived from the `kern.boottime` sysctl. | Darwin, Dragonfly, FreeBSD, NetBSD, OpenBSD, Solaris
 conntrack | Shows conntrack statistics (does nothing if no `/proc/sys/net/netfilter/` present). | Linux
-cpu | Exposes CPU statistics | Darwin, Dragonfly, FreeBSD, Linux
+cpu | Exposes CPU statistics | Darwin, Dragonfly, FreeBSD, Linux, Solaris
 diskstats | Exposes disk I/O statistics. | Darwin, Linux
 edac | Exposes error detection and correction statistics. | Linux
 entropy | Exposes available entropy. | Linux
@@ -54,7 +57,7 @@ timex | Exposes selected adjtimex(2) system call stats. | Linux
 uname | Exposes system information as provided by the uname system call. | Linux
 vmstat | Exposes statistics from `/proc/vmstat`. | Linux
 xfs | Exposes XFS runtime statistics. | Linux (kernel 4.4+)
-zfs | Exposes [ZFS](http://open-zfs.org/) performance statistics. | [Linux](http://zfsonlinux.org/)
+zfs | Exposes [ZFS](http://open-zfs.org/) performance statistics. | [Linux](http://zfsonlinux.org/), Solaris
 
 ### Disabled by default
 
